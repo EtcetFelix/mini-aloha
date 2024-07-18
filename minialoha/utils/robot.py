@@ -1,9 +1,18 @@
-import numpy as np
-from dynamixel import Dynamixel, OperatingMode, ReadAttribute
 import time
-from dynamixel_sdk import GroupSyncRead, GroupSyncWrite, DXL_LOBYTE, DXL_HIBYTE, DXL_LOWORD, DXL_HIWORD
 from enum import Enum, auto
 from typing import Union
+
+import numpy as np
+from dynamixel_sdk import (
+    DXL_HIBYTE,
+    DXL_HIWORD,
+    DXL_LOBYTE,
+    DXL_LOWORD,
+    GroupSyncRead,
+    GroupSyncWrite,
+)
+
+from minialoha.utils.dynamixel import OperatingMode, ReadAttribute
 
 
 class MotorControlType(Enum):
@@ -23,7 +32,8 @@ class Robot:
             self.dynamixel.portHandler,
             self.dynamixel.packetHandler,
             ReadAttribute.POSITION.value,
-            4)
+            4,
+        )
         for id in self.servo_ids:
             self.position_reader.addParam(id)
 
@@ -31,7 +41,8 @@ class Robot:
             self.dynamixel.portHandler,
             self.dynamixel.packetHandler,
             ReadAttribute.VELOCITY.value,
-            4)
+            4,
+        )
         for id in self.servo_ids:
             self.velocity_reader.addParam(id)
 
@@ -39,7 +50,8 @@ class Robot:
             self.dynamixel.portHandler,
             self.dynamixel.packetHandler,
             self.dynamixel.ADDR_GOAL_POSITION,
-            4)
+            4,
+        )
         for id in self.servo_ids:
             self.pos_writer.addParam(id, [2048])
 
@@ -47,7 +59,8 @@ class Robot:
             self.dynamixel.portHandler,
             self.dynamixel.packetHandler,
             self.dynamixel.ADDR_GOAL_PWM,
-            2)
+            2,
+        )
         for id in self.servo_ids:
             self.pwm_writer.addParam(id, [2048])
         self._disable_torque()
@@ -64,12 +77,12 @@ class Robot:
             if tries > 0:
                 return self.read_position(tries=tries - 1)
             else:
-                print(f'failed to read position!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                print("failed to read position!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         positions = []
         for id in self.servo_ids:
             position = self.position_reader.getData(id, ReadAttribute.POSITION.value, 4)
-            if position > 2 ** 31:
-                position -= 2 ** 32
+            if position > 2**31:
+                position -= 2**32
             positions.append(position)
         return positions
 
@@ -82,8 +95,8 @@ class Robot:
         velocties = []
         for id in self.servo_ids:
             velocity = self.velocity_reader.getData(id, ReadAttribute.VELOCITY.value, 4)
-            if velocity > 2 ** 31:
-                velocity -= 2 ** 32
+            if velocity > 2**31:
+                velocity -= 2**32
             velocties.append(velocity)
         return velocties
 
@@ -92,13 +105,15 @@ class Robot:
 
         :param action: list or numpy array of target joint positions in range [0, 4096]
         """
-        if not self.motor_control_state is MotorControlType.POSITION_CONTROL:
+        if self.motor_control_state is not MotorControlType.POSITION_CONTROL:
             self._set_position_control()
         for i, motor_id in enumerate(self.servo_ids):
-            data_write = [DXL_LOBYTE(DXL_LOWORD(action[i])),
-                          DXL_HIBYTE(DXL_LOWORD(action[i])),
-                          DXL_LOBYTE(DXL_HIWORD(action[i])),
-                          DXL_HIBYTE(DXL_HIWORD(action[i]))]
+            data_write = [
+                DXL_LOBYTE(DXL_LOWORD(action[i])),
+                DXL_HIBYTE(DXL_LOWORD(action[i])),
+                DXL_LOBYTE(DXL_HIWORD(action[i])),
+                DXL_HIBYTE(DXL_HIWORD(action[i])),
+            ]
             self.pos_writer.changeParam(motor_id, data_write)
 
         self.pos_writer.txPacket()
@@ -108,12 +123,13 @@ class Robot:
         Sets the pwm values for the servos.
         :param action: list or numpy array of pwm values in range [0, 885]
         """
-        if not self.motor_control_state is MotorControlType.PWM:
+        if self.motor_control_state is not MotorControlType.PWM:
             self._set_pwm_control()
         for i, motor_id in enumerate(self.servo_ids):
-            data_write = [DXL_LOBYTE(DXL_LOWORD(action[i])),
-                          DXL_HIBYTE(DXL_LOWORD(action[i])),
-                          ]
+            data_write = [
+                DXL_LOBYTE(DXL_LOWORD(action[i])),
+                DXL_HIBYTE(DXL_LOWORD(action[i])),
+            ]
             self.pwm_writer.changeParam(motor_id, data_write)
 
         self.pwm_writer.txPacket()
@@ -132,7 +148,9 @@ class Robot:
         @return:
         """
         if isinstance(limit, int):
-            limits = [limit, ] * 5
+            limits = [
+                limit,
+            ] * 5
         else:
             limits = limit
         self._disable_torque()
@@ -141,12 +159,12 @@ class Robot:
         self._enable_torque()
 
     def _disable_torque(self):
-        print(f'disabling torque for servos {self.servo_ids}')
+        print(f"disabling torque for servos {self.servo_ids}")
         for motor_id in self.servo_ids:
             self.dynamixel._disable_torque(motor_id)
 
     def _enable_torque(self):
-        print(f'enabling torque for servos {self.servo_ids}')
+        print(f"enabling torque for servos {self.servo_ids}")
         for motor_id in self.servo_ids:
             self.dynamixel._enable_torque(motor_id)
 
@@ -166,10 +184,10 @@ class Robot:
 
 
 if __name__ == "__main__":
-    robot = Robot(device_name='/dev/tty.usbmodem57380045631')
+    robot = Robot(device_name="/dev/tty.usbmodem57380045631")
     robot._disable_torque()
     for _ in range(10000):
         s = time.time()
         pos = robot.read_position()
         elapsed = time.time() - s
-        print(f'read took {elapsed} pos {pos}')
+        print(f"read took {elapsed} pos {pos}")
