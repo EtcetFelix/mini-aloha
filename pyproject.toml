@@ -9,8 +9,18 @@ readme = "README.md"
 python = "^3.12"
 dynamixel-sdk = "*"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.0.0"
+pytest-mock = "*"
+ipython = "*"
+ruff = "*"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+extend-select = [
+  "UP",  # pyupgrade
+]
