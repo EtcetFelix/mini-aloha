@@ -42,7 +42,6 @@ def press_to_start(leader: Robot):
     pressed = False
     while not pressed:
         gripper_pos = leader.read_position()[-1]
-        print(f"Gripper position: {gripper_pos}")
         if gripper_pos < close_thresh_in_ticks:
             pressed = True
             print("Gripper closed!")
@@ -80,9 +79,6 @@ def main(robo_manager: RobotManager):
     )
     leader = robo_manager.get_robot("leader")
     follower = robo_manager.get_robot("follower")
-    # side = sys.argv[1]
-    # while True:
-
     prep_robots(
         leader,
         follower,

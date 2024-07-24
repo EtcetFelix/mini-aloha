@@ -142,6 +142,7 @@ class Robot:
         """
         Sets a constant torque torque for the last servo in the chain. This is useful for the trigger of the leader arm
         """
+        self.disable_robot()
         self.dynamixel._enable_torque(self.servo_ids[-1])
         self.dynamixel.set_pwm_value(self.servo_ids[-1], 200)
 
