@@ -10,8 +10,10 @@ from minialoha.utils.robot_manager import RobotManager
 DELTA_TIME_STEP = 0.02
 
 
-def prep_robots(leader: Robot, puppet_bot=None):
+def prep_robots(leader: Robot, follower: Robot):
     # TODO: move arms to starting position
+    # Make sure to manually adjust your robot to these positions
+    # Otherwise they'll move crazy fast and can potentially damage wires
     leader.set_goal_pos(
         action=[
             1000,
@@ -22,6 +24,8 @@ def prep_robots(leader: Robot, puppet_bot=None):
         ]
     )
     print(f"Leader position: {leader.read_position()}")
+    follower.set_goal_pos(action=[2048, 2092, 1967, 1070, 2001])
+    print(f"Follower position: {follower.read_position()}")
     # TODO: move grippers to starting position
     # TODO: Turn torque on for everything
     pass
@@ -46,11 +50,15 @@ def press_to_start(leader: Robot):
     leader.set_trigger_torque()
 
 
-def teleop():
+def teleop(leader: Robot, follower: Robot):
     """A standalone function for experimenting with teleoperation. No data recording."""
     while True:
-        # Sync joint and gripper positions
-        follower.set_goal_pos(leader.read_position())
+        try:
+            # Sync joint and gripper positions
+            follower.set_goal_pos(leader.read_position())
+        except Exception as e:
+            print(e)
+            break
         # sleep DT
         time.sleep(DELTA_TIME_STEP)
 
@@ -59,17 +67,31 @@ def main(robo_manager: RobotManager):
     leader_dynamixel = Dynamixel.Config(
         baudrate=1_000_000, device_name="COM6"
     ).instantiate()
+    follower_dynamixel = Dynamixel.Config(
+        baudrate=1_000_000, device_name="COM3"
+    ).instantiate()
+    robo_manager.add_robot(
+        "follower",
+        Robot(follower_dynamixel, servo_ids=[1, 2, 3, 4, 5]),
+    )
     robo_manager.add_robot(
         "leader",
         Robot(leader_dynamixel, servo_ids=[11, 12, 13, 14, 15]),
     )
     leader = robo_manager.get_robot("leader")
+    follower = robo_manager.get_robot("follower")
     # side = sys.argv[1]
     # while True:
 
-    # prep_robots(leader)
+    prep_robots(
+        leader,
+        follower,
+    )
     press_to_start(leader)
     time.sleep(DELTA_TIME_STEP)
+    teleop(leader, follower)
+
+
 if __name__ == "__main__":
     robo_manager = RobotManager()
     try:
