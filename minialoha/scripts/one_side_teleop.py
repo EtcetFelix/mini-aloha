@@ -1,7 +1,10 @@
+import os
+import sys
 import time
 
 from minialoha.utils.dynamixel import Dynamixel
 from minialoha.utils.robot import Robot
+from minialoha.utils.robot_manager import RobotManager
 
 # fixed constants
 DELTA_TIME_STEP = 0.02
@@ -52,26 +55,29 @@ def teleop():
         time.sleep(DELTA_TIME_STEP)
 
 
-if __name__ == "__main__":
+def main(robo_manager: RobotManager):
     leader_dynamixel = Dynamixel.Config(
         baudrate=1_000_000, device_name="COM6"
     ).instantiate()
-    # follower_dynamixel = Dynamixel.Config(
-    #     baudrate=1_000_000, device_name="COM3"
-    # ).instantiate()
-    # follower = Robot(follower_dynamixel, servo_ids=[1, 2, 3, 4, 5])
-    leader = Robot(leader_dynamixel, servo_ids=[11, 12, 13, 14, 15])
+    robo_manager.add_robot(
+        "leader",
+        Robot(leader_dynamixel, servo_ids=[11, 12, 13, 14, 15]),
+    )
+    leader = robo_manager.get_robot("leader")
     # side = sys.argv[1]
     # while True:
 
     # prep_robots(leader)
     press_to_start(leader)
     time.sleep(DELTA_TIME_STEP)
-    print("testing done")
-    print("waiting a few seconds for user to realize its over...")
-    time.sleep(1)
-    leader.disable_robot()
-    print("disabled")
-    # time.sleep(DELTA_TIME_STEP)
-    # e = IPython.embed()
-    # teleop()
+if __name__ == "__main__":
+    robo_manager = RobotManager()
+    try:
+        main(robo_manager)
+    except KeyboardInterrupt:
+        print("Shutdown requested...exiting")
+        robo_manager.shutdown_gracefully()
+        try:
+            sys.exit(130)
+        except SystemExit:
+            os._exit(130)
