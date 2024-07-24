@@ -2,7 +2,7 @@
 
 
 
-A cheaper small scale version of the non-mobile aloha robot.
+A cheaper small scale version of the [non-mobile Aloha robot](https://tonyzhaozh.github.io/aloha/)
 
 Currently uses the low cost robotic arm designs by Alexander Koch: [low-cost-robot](https://github.com/AlexanderKoch-Koch/low_cost_robot)
 
