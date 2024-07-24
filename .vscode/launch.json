@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: manual adjusting",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tests/integration/manual_adjusting.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python Debugger: one side teleop",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "minialoha/scripts/one_side_teleop.py",
+            "console": "integratedTerminal"
+        }
+    ]
+}
