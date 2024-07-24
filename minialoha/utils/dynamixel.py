@@ -81,19 +81,19 @@ class Dynamixel:
         self.portHandler.closePort()
 
     def set_goal_position(self, motor_id, goal_position):
-        # if self.operating_modes[motor_id] is not OperatingMode.POSITION:
-        #     self._disable_torque(motor_id)
-        #     self.set_operating_mode(motor_id, OperatingMode.POSITION)
+        if self.operating_modes[motor_id] is not OperatingMode.POSITION:
+            self._disable_torque(motor_id)
+            self.set_operating_mode(motor_id, OperatingMode.POSITION)
 
-        # if not self.torque_enabled[motor_id]:
-        #     self._enable_torque(motor_id)
+        if not self.torque_enabled[motor_id]:
+            self._enable_torque(motor_id)
 
-        # self._enable_torque(motor_id)
+        self._enable_torque(motor_id)
         dxl_comm_result, dxl_error = self.packetHandler.write4ByteTxRx(
             self.portHandler, motor_id, self.ADDR_GOAL_POSITION, goal_position
         )
-        # self._process_response(dxl_comm_result, dxl_error)
-        # print(f'set position of motor {motor_id} to {goal_position}')
+        self._process_response(dxl_comm_result, dxl_error, motor_id)
+        print(f"set position of motor {motor_id} to {goal_position}")
 
     def set_pwm_value(self, motor_id: int, pwm_value, tries=3):
         if self.operating_modes[motor_id] is not OperatingMode.PWM:
