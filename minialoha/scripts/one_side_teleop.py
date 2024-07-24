@@ -12,19 +12,18 @@ DELTA_TIME_STEP = 0.02
 
 def prep_robots(leader: Robot, follower: Robot):
     # TODO: move arms to starting position
-    # Make sure to manually adjust your robot to these positions
+    # Make sure to manually adjust both robots to these positions
     # Otherwise they'll move crazy fast and can potentially damage wires
-    leader.set_goal_pos(
-        action=[
-            1000,
-            1796,
-            1629,
-            1003,
-            2198,
-        ]
-    )
+    goal_pos = [
+        1000,
+        1796,
+        1629,
+        1003,
+        2198,
+    ]
+    leader.set_goal_pos(action=goal_pos)
     print(f"Leader position: {leader.read_position()}")
-    follower.set_goal_pos(action=[2048, 2092, 1967, 1070, 2001])
+    follower.set_goal_pos(action=goal_pos)
     print(f"Follower position: {follower.read_position()}")
     # TODO: move grippers to starting position
     # TODO: Turn torque on for everything
