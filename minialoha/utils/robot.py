@@ -1,3 +1,5 @@
+"""Module to control a robot, i.e. a group of servos at once."""
+
 import time
 from enum import Enum, auto
 from typing import Union
@@ -12,7 +14,7 @@ from dynamixel_sdk import (
     GroupSyncWrite,
 )
 
-from minialoha.utils.dynamixel import OperatingMode, ReadAttribute
+from minialoha.utils.dynamixel import Dynamixel, OperatingMode, ReadAttribute
 
 
 class MotorControlType(Enum):
@@ -141,6 +143,17 @@ class Robot:
         self.dynamixel._enable_torque(self.servo_ids[-1])
         self.dynamixel.set_pwm_value(self.servo_ids[-1], 200)
 
+    def set_trigger_waiting_torque(self, position: int = 2500):
+        """
+        Sets a torque for the last servo in the chain to wait for a trigger.
+        :param position: the position to set the trigger to wait at.
+        """
+        # self.dynamixel._enable_torque(self.servo_ids[-1])
+        self.dynamixel.set_goal_position(self.servo_ids[-1], position)
+
+    def turn_off_trigger_torque(self):
+        self.dynamixel._disable_torque(self.servo_ids[-1])
+
     def limit_pwm(self, limit: Union[int, list, np.ndarray]):
         """
         Limits the pwm values for the servos in for position control
@@ -157,6 +170,10 @@ class Robot:
         for motor_id, limit in zip(self.servo_ids, limits):
             self.dynamixel.set_pwm_limit(motor_id, limit)
         self._enable_torque()
+
+    def disable_robot(self):
+        self._disable_torque()
+        self.motor_control_state = MotorControlType.DISABLED
 
     def _disable_torque(self):
         print(f"disabling torque for servos {self.servo_ids}")

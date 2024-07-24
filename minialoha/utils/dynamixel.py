@@ -1,3 +1,5 @@
+"""Module to control a single servo at once."""
+
 from __future__ import annotations
 
 import enum

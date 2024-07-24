@@ -25,8 +25,21 @@ def prep_robots(leader: Robot, puppet_bot=None):
 
 
 def press_to_start(leader: Robot):
-    # TODO: press gripper to start data collection
     # TODO: disable torque for only gripper joint of master robot to allow user movement
+    trigger_goal_pos = 2500
+    leader.set_trigger_waiting_torque(trigger_goal_pos)
+    time.sleep(DELTA_TIME_STEP * 10)
+    leader.turn_off_trigger_torque()
+    close_thresh = 0.1
+    close_thresh_in_ticks = (1 - close_thresh) * trigger_goal_pos
+    pressed = False
+    while not pressed:
+        gripper_pos = leader.read_position()[-1]
+        print(f"Gripper position: {gripper_pos}")
+        if gripper_pos < close_thresh_in_ticks:
+            pressed = True
+            print("Gripper closed!")
+        time.sleep(DELTA_TIME_STEP / 10)
     leader.set_trigger_torque()
 
 
@@ -51,10 +64,14 @@ if __name__ == "__main__":
     # side = sys.argv[1]
     # while True:
 
-    prep_robots(leader)
-    # press_to_start(leader)
-    time.sleep(DELTA_TIME_STEP / 5)
-    print("done")
+    # prep_robots(leader)
+    press_to_start(leader)
+    time.sleep(DELTA_TIME_STEP)
+    print("testing done")
+    print("waiting a few seconds for user to realize its over...")
+    time.sleep(1)
+    leader.disable_robot()
+    print("disabled")
     # time.sleep(DELTA_TIME_STEP)
     # e = IPython.embed()
     # teleop()
