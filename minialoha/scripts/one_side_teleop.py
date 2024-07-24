@@ -11,7 +11,6 @@ DELTA_TIME_STEP = 0.02
 
 
 def prep_robots(leader: Robot, follower: Robot):
-    # TODO: move arms to starting position
     # Make sure to manually adjust both robots to these positions
     # Otherwise they'll move crazy fast and can potentially damage wires
     goal_pos = [
@@ -25,13 +24,9 @@ def prep_robots(leader: Robot, follower: Robot):
     print(f"Leader position: {leader.read_position()}")
     follower.set_goal_pos(action=goal_pos)
     print(f"Follower position: {follower.read_position()}")
-    # TODO: move grippers to starting position
-    # TODO: Turn torque on for everything
-    pass
 
 
 def press_to_start(leader: Robot):
-    # TODO: disable torque for only gripper joint of master robot to allow user movement
     trigger_goal_pos = 2500
     leader.set_trigger_waiting_torque(trigger_goal_pos)
     time.sleep(DELTA_TIME_STEP * 10)
