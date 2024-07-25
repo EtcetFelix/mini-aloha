@@ -13,6 +13,7 @@ dm_env = "*"
 matplotlib = "*"
 h5py = "*"
 python-dotenv = "*"
+tqdm = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.0.0"
