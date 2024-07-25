@@ -2,6 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: record episodes",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "minialoha/scripts/record_episodes.py",
+            "args": ["--task_name","aloha_wear_shoe", "--episode_idx", "1"],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python Debugger: manual adjusting",
             "type": "debugpy",
             "request": "launch",
