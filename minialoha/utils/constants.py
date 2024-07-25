@@ -20,6 +20,18 @@ TASK_CONFIGS = {
 ### ALOHA fixed constants
 DELTA_TIME_STEP = 0.02
 
+# Left finger position limits (qpos[7]), right_finger = -1 * left_finger
+MASTER_GRIPPER_POSITION_OPEN = 0.02417
+MASTER_GRIPPER_POSITION_CLOSE = 0.01244
+PUPPET_GRIPPER_POSITION_OPEN = 0.05800
+PUPPET_GRIPPER_POSITION_CLOSE = 0.0184
+
+# Gripper joint limits (qpos[6])
+MASTER_GRIPPER_JOINT_OPEN = 0.3083
+MASTER_GRIPPER_JOINT_CLOSE = -0.6842
+PUPPET_GRIPPER_JOINT_OPEN = 1.4910
+PUPPET_GRIPPER_JOINT_CLOSE = -0.0
+
 ############################ Helper functions ############################
 
 
@@ -37,3 +49,8 @@ def prep_robots(leader: Robot, follower: Robot):
     print(f"Leader position: {leader.read_position()}")
     follower.set_goal_pos(action=goal_pos)
     print(f"Follower position: {follower.read_position()}")
+
+
+PUPPET_GRIPPER_POSITION_NORMALIZE_FN = lambda x: (x - PUPPET_GRIPPER_POSITION_CLOSE) / (
+    PUPPET_GRIPPER_POSITION_OPEN - PUPPET_GRIPPER_POSITION_CLOSE
+)
