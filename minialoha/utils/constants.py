@@ -19,3 +19,21 @@ TASK_CONFIGS = {
 
 ### ALOHA fixed constants
 DELTA_TIME_STEP = 0.02
+
+############################ Helper functions ############################
+
+
+def prep_robots(leader: Robot, follower: Robot):
+    # Make sure to manually adjust both robots to these positions
+    # Otherwise they'll move crazy fast and can potentially damage wires
+    goal_pos = [
+        1000,
+        1796,
+        1629,
+        1003,
+        2198,
+    ]
+    leader.set_goal_pos(action=goal_pos)
+    print(f"Leader position: {leader.read_position()}")
+    follower.set_goal_pos(action=goal_pos)
+    print(f"Follower position: {follower.read_position()}")
