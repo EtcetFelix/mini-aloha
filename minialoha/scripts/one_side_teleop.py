@@ -2,12 +2,10 @@ import os
 import sys
 import time
 
+from minialoha.utils.constants import DELTA_TIME_STEP
 from minialoha.utils.dynamixel import Dynamixel
 from minialoha.utils.robot import Robot
 from minialoha.utils.robot_manager import RobotManager
-
-# fixed constants
-DELTA_TIME_STEP = 0.02
 
 
 def prep_robots(leader: Robot, follower: Robot):
