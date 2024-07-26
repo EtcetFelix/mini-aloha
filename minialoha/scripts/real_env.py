@@ -6,14 +6,18 @@ import dm_env
 # import IPython
 # import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 
 from minialoha.utils.constants import (
     DELTA_TIME_STEP,
+    PUPPET_GRIPPER_POSITION_NORMALIZE_FN,
 )
+from minialoha.utils.dynamixel import Dynamixel
+from minialoha.utils.robot import Robot
 
 # from interbotix_xs_modules.arm import InterbotixManipulatorXS
 # from interbotix_xs_msgs.msg import JointSingleCommand
-from minialoha.utils.robot_utils import (
+from minialoha.utils.robot_recorder import (
     Recorder,
 )
 
@@ -52,20 +56,19 @@ class RealEnv:
 
     def __init__(self, init_node, setup_robots=True):
         pass
-        # self.puppet_bot_left = InterbotixManipulatorXS(
-        #     robot_model="vx300s",
-        #     group_name="arm",
-        #     gripper_name="gripper",
-        #     robot_name="puppet_left",
-        #     init_node=init_node,
-        # )
-        # self.puppet_bot_right = InterbotixManipulatorXS(
-        #     robot_model="vx300s",
-        #     group_name="arm",
-        #     gripper_name="gripper",
-        #     robot_name="puppet_right",
-        #     init_node=False,
-        # )
+        self.puppet_dynamixel_left = Dynamixel.Config(
+            baudrate=1_000_000, device_name="COM6"
+        ).instantiate()
+        self.puppet_dynamixel_right = Dynamixel.Config(
+            baudrate=1_000_000, device_name="COM6"
+        ).instantiate()
+
+        self.puppet_bot_left = Robot(
+            self.puppet_dynamixel_left, servo_ids=[1, 2, 3, 4, 5]
+        )
+        self.puppet_bot_right = Robot(
+            self.puppet_dynamixel_right, servo_ids=[1, 2, 3, 4, 5]
+        )
         # if setup_robots:
         #     self.setup_robots()
 
@@ -78,20 +81,20 @@ class RealEnv:
     #     setup_puppet_bot(self.puppet_bot_left)
     #     setup_puppet_bot(self.puppet_bot_right)
 
-    def get_qpos(self):
+    def get_qpos(self) -> NDArray[np.int32]:
+        self.recorder_left.update_puppet_state()
         left_qpos_raw = self.recorder_left.qpos
         right_qpos_raw = self.recorder_right.qpos
-        # left_arm_qpos = left_qpos_raw[:6]
-        # right_arm_qpos = right_qpos_raw[:6]
-        # left_gripper_qpos = [
-        #     PUPPET_GRIPPER_POSITION_NORMALIZE_FN(left_qpos_raw[7])
-        # ]  # this is position not joint
-        # right_gripper_qpos = [
-        #     PUPPET_GRIPPER_POSITION_NORMALIZE_FN(right_qpos_raw[7])
-        # ]  # this is position not joint
+        left_arm_qpos = left_qpos_raw[:6]
+        right_arm_qpos = right_qpos_raw[:6]
+        left_gripper_qpos = [
+            PUPPET_GRIPPER_POSITION_NORMALIZE_FN(left_qpos_raw[7])
+        ]  # this is position not joint
+        right_gripper_qpos = [
+            PUPPET_GRIPPER_POSITION_NORMALIZE_FN(right_qpos_raw[7])
+        ]  # this is position not joint
         return np.concatenate(
-            # [left_arm_qpos, left_gripper_qpos, right_arm_qpos, right_gripper_qpos]
-            [[0], [0], [0], [0]]
+            [left_arm_qpos, left_gripper_qpos, right_arm_qpos, right_gripper_qpos]
         )
 
     # def get_qvel(self):
@@ -176,14 +179,14 @@ class RealEnv:
             observation=self.get_observation(),
         )
 
-    # def step(self, action):
-    def step(self):
-        # state_len = int(len(action) / 2)
-        # left_action = action[:state_len]
-        # right_action = action[state_len:]
-        # self.puppet_bot_left.arm.set_joint_positions(left_action[:6], blocking=False)
-        # self.puppet_bot_right.arm.set_joint_positions(right_action[:6], blocking=False)
-        # self.set_gripper_pose(left_action[-1], right_action[-1])
+    def step(self, action):
+        state_len = int(len(action) / 2)
+        left_action = action[:state_len]
+        right_action = action[state_len:]
+
+        self.puppet_bot_left.set_goal_pos(left_action[:6])
+        self.puppet_bot_right.set_goal_pos(right_action[:6])
+
         time.sleep(DELTA_TIME_STEP)
         return dm_env.TimeStep(
             step_type=dm_env.StepType.MID,
@@ -193,20 +196,17 @@ class RealEnv:
         )
 
 
-# def get_action(master_bot_left, master_bot_right):
-#     action = np.zeros(14)  # 6 joint + 1 gripper, for two arms
-#     # Arm actions
-#     action[:6] = master_bot_left.dxl.joint_states.position[:6]
-#     action[7 : 7 + 6] = master_bot_right.dxl.joint_states.position[:6]
-#     # Gripper actions
-#     action[6] = MASTER_GRIPPER_JOINT_NORMALIZE_FN(
-#         master_bot_left.dxl.joint_states.position[6]
-#     )
-#     action[7 + 6] = MASTER_GRIPPER_JOINT_NORMALIZE_FN(
-#         master_bot_right.dxl.joint_states.position[6]
-#     )
+def get_action(master_bot_left: Robot, master_bot_right: Robot) -> NDArray[np.float64]:
+    action = np.zeros(14)  # 6 joint + 1 gripper, for two arms
+    num_joints = 6
 
-#     return action
+    action_for_left_robot = master_bot_left.read_position()[:6]
+    action_for_right_robot = master_bot_right.read_position()[:6]
+
+    action[:num_joints] = action_for_left_robot
+    action[num_joints + 1 : num_joints + 1 + num_joints] = action_for_right_robot
+
+    return action
 
 
 def make_real_env(init_node, setup_robots=True) -> RealEnv:

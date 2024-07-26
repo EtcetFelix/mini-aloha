@@ -5,13 +5,17 @@ import time
 import IPython
 from tqdm import tqdm
 
-from minialoha.scripts.real_env import make_real_env
+from minialoha.scripts.real_env import get_action, make_real_env
 from minialoha.utils.constants import (
     DELTA_TIME_STEP,
     TASK_CONFIGS,
 )
+from minialoha.utils.dynamixel import Dynamixel
+from minialoha.utils.robot import Robot
 
 e = IPython.embed
+
+BAUDRATE = 1_000_000
 
 
 # def opening_ceremony(
@@ -80,20 +84,14 @@ def capture_one_episode(
     print(f"Dataset name: {dataset_name}")
 
     # source of data
-    # master_bot_left = InterbotixManipulatorXS(
-    #     robot_model="wx250s",
-    #     group_name="arm",
-    #     gripper_name="gripper",
-    #     robot_name="master_left",
-    #     init_node=True,
-    # )
-    # master_bot_right = InterbotixManipulatorXS(
-    #     robot_model="wx250s",
-    #     group_name="arm",
-    #     gripper_name="gripper",
-    #     robot_name="master_right",
-    #     init_node=False,
-    # )
+    left_leader_dynamixel = Dynamixel.Config(
+        baudrate=BAUDRATE, device_name="COM6"
+    ).instantiate()
+    master_bot_left = Robot(left_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
+    right_leader_dynamixel = Dynamixel.Config(
+        baudrate=BAUDRATE, device_name="COM3"
+    ).instantiate()
+    master_bot_right = Robot(right_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
     env = make_real_env(init_node=False, setup_robots=False)
 
     # saving dataset
@@ -117,12 +115,11 @@ def capture_one_episode(
     actions = []
     actual_dt_history = []
     for _ in tqdm(range(max_timesteps)):
-        t0 = time.time()  #
-        # action = get_action(master_bot_left, master_bot_right)
-        t1 = time.time()  #
-        # timestep = env.step(action)
-        timestep = env.step()
-        t2 = time.time()  #
+        t0 = time.time()
+        action = get_action(master_bot_left, master_bot_right)
+        t1 = time.time()
+        timestep = env.step(action)
+        t2 = time.time()
         timesteps.append(timestep)
         # actions.append(action)
         actual_dt_history.append([t0, t1, t2])
