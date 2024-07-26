@@ -10,26 +10,28 @@ from numpy.typing import NDArray
 
 from minialoha.utils.constants import (
     DELTA_TIME_STEP,
+    LEFT_PUPPET_BOT_NAME,
     PUPPET_GRIPPER_POSITION_NORMALIZE_FN,
+    RIGHT_PUPPET_BOT_NAME,
 )
-from minialoha.utils.dynamixel import Dynamixel
-from minialoha.utils.robot import Robot
+from minialoha.utils.robot_manager import RobotManager
 
 # from interbotix_xs_modules.arm import InterbotixManipulatorXS
 # from interbotix_xs_msgs.msg import JointSingleCommand
 from minialoha.utils.robot_recorder import (
     Recorder,
 )
-
-# from minialoha.utils.robot_utils import (
-#     # ImageRecorder,
-#     move_arms,
-#     move_grippers,
-#     setup_master_bot,
-#     setup_puppet_bot,
-# )
+from minialoha.utils.robot_utils import (
+    # ImageRecorder,
+    # move_arms,
+    # move_grippers,
+    # setup_master_bot,
+    setup_puppet_bot,
+)
 
 # e = IPython.embed
+
+NUM_JOINTS_ON_ROBOT = 6
 
 
 class RealEnv:
@@ -54,35 +56,33 @@ class RealEnv:
                                    "cam_right_wrist": (480x640x3)} # h, w, c, dtype='uint8'
     """
 
-    def __init__(self, init_node, setup_robots=True):
-        pass
-        self.puppet_dynamixel_left = Dynamixel.Config(
-            baudrate=1_000_000, device_name="COM6"
-        ).instantiate()
-        self.puppet_dynamixel_right = Dynamixel.Config(
-            baudrate=1_000_000, device_name="COM6"
-        ).instantiate()
+    def __init__(
+        self,
+        robot_manager: RobotManager,
+        setup_robots=True,
+    ):
+        if setup_robots:
+            self.setup_robots()
 
-        self.puppet_bot_left = Robot(
-            self.puppet_dynamixel_left, servo_ids=[1, 2, 3, 4, 5]
+        self.robot_manager = robot_manager
+        self.recorder_left = Recorder(
+            LEFT_PUPPET_BOT_NAME, self.robot_manager, init_node=False
         )
-        self.puppet_bot_right = Robot(
-            self.puppet_dynamixel_right, servo_ids=[1, 2, 3, 4, 5]
+        self.recorder_right = Recorder(
+            RIGHT_PUPPET_BOT_NAME, self.robot_manager, init_node=False
         )
-        # if setup_robots:
-        #     self.setup_robots()
+        self.recorders = [self.recorder_right, self.recorder_left]
 
-        self.recorder_left = Recorder("left", init_node=False)
-        self.recorder_right = Recorder("right", init_node=False)
         # self.image_recorder = ImageRecorder(init_node=False)
         # self.gripper_command = JointSingleCommand(name="gripper")
 
-    # def setup_robots(self):
-    #     setup_puppet_bot(self.puppet_bot_left)
-    #     setup_puppet_bot(self.puppet_bot_right)
+    def setup_robots(self):
+        setup_puppet_bot(self.puppet_bot_left)
+        setup_puppet_bot(self.puppet_bot_right)
 
-    def get_qpos(self) -> NDArray[np.int32]:
-        self.recorder_left.update_puppet_state()
+    def get_qpos(self) -> NDArray[np.float64]:
+        for recorder in self.recorders:
+            recorder.update_puppet_state()
         left_qpos_raw = self.recorder_left.qpos
         right_qpos_raw = self.recorder_right.qpos
         left_arm_qpos = left_qpos_raw[:6]
@@ -180,12 +180,16 @@ class RealEnv:
         )
 
     def step(self, action):
-        state_len = int(len(action) / 2)
-        left_action = action[:state_len]
-        right_action = action[state_len:]
+        puppet_robots = self.robot_manager.puppet_robot_names
+        state_len = int(len(action) / len(puppet_robots))
 
-        self.puppet_bot_left.set_goal_pos(left_action[:6])
-        self.puppet_bot_right.set_goal_pos(right_action[:6])
+        # Set the goal pos for all puppet bots
+        for puppet_index, puppet_bot in enumerate(puppet_robots):
+            action_index = puppet_index * state_len
+            action_for_puppet = action[action_index : action_index + puppet_index]
+            self.robot_manager.set_robot_goal_pos(
+                puppet_bot, action_for_puppet[:NUM_JOINTS_ON_ROBOT]
+            )
 
         time.sleep(DELTA_TIME_STEP)
         return dm_env.TimeStep(
@@ -195,22 +199,26 @@ class RealEnv:
             observation=self.get_observation(),
         )
 
+    def get_action(self) -> NDArray[np.float64]:
+        leader_robots = self.robot_manager.leader_robot_names
+        num_arms = 2
+        action = np.zeros(
+            (NUM_JOINTS_ON_ROBOT + 1) * num_arms
+        )  # 6 joint + 1 gripper, for two arms
 
-def get_action(master_bot_left: Robot, master_bot_right: Robot) -> NDArray[np.float64]:
-    action = np.zeros(14)  # 6 joint + 1 gripper, for two arms
-    num_joints = 6
+        # Get all the leader robot actions
+        for robot_index, leader_robot in enumerate(leader_robots):
+            robot_action = self.robot_manager.get_robot_pos(leader_robot)[
+                :NUM_JOINTS_ON_ROBOT
+            ]
+            action_index = NUM_JOINTS_ON_ROBOT * robot_index
+            action[action_index : NUM_JOINTS_ON_ROBOT + action_index] = robot_action
 
-    action_for_left_robot = master_bot_left.read_position()[:6]
-    action_for_right_robot = master_bot_right.read_position()[:6]
-
-    action[:num_joints] = action_for_left_robot
-    action[num_joints + 1 : num_joints + 1 + num_joints] = action_for_right_robot
-
-    return action
+        return action
 
 
-def make_real_env(init_node, setup_robots=True) -> RealEnv:
-    env = RealEnv(init_node, setup_robots)
+def make_real_env(robot_manager: RobotManager, setup_robots=True) -> RealEnv:
+    env = RealEnv(robot_manager, setup_robots)
     return env
 
 

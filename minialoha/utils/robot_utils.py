@@ -126,17 +126,19 @@
 #         time.sleep(DELTA_TIME_STEP)
 
 
-# def setup_puppet_bot(bot):
-#     bot.dxl.robot_reboot_motors("single", "gripper", True)
-#     bot.dxl.robot_set_operating_modes("group", "arm", "position")
-#     bot.dxl.robot_set_operating_modes("single", "gripper", "current_based_position")
-#     torque_on(bot)
+def setup_puppet_bot(bot):
+    # TODO: Change this to using the Robot class
+    bot.dxl.robot_reboot_motors("single", "gripper", True)
+    bot.dxl.robot_set_operating_modes("group", "arm", "position")
+    bot.dxl.robot_set_operating_modes("single", "gripper", "current_based_position")
+    torque_on(bot)
 
 
-# def setup_master_bot(bot):
-#     bot.dxl.robot_set_operating_modes("group", "arm", "pwm")
-#     bot.dxl.robot_set_operating_modes("single", "gripper", "current_based_position")
-#     torque_off(bot)
+def setup_master_bot(bot):
+    # TODO: Change this to using the Robot class
+    bot.dxl.robot_set_operating_modes("group", "arm", "pwm")
+    bot.dxl.robot_set_operating_modes("single", "gripper", "current_based_position")
+    torque_off(bot)
 
 
 # def set_standard_pid_gains(bot):

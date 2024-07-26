@@ -1,23 +1,34 @@
-# # from interbotix_xs_msgs.msg import JointSingleCommand
+"""Module to handle recording of robot state."""
 # from minialoha.utils.constants import DELTA_TIME_STEP
 
 # e = IPython.embed
-
 
 import time
 from typing import List
 
 import numpy as np
 
+from minialoha.utils.robot_manager import RobotManager
+
 
 class Recorder:
-    def __init__(self, side, init_node=True, is_debug=False):
+    """Recorder to track the state of a single robot."""
+
+    def __init__(
+        self,
+        robot_name: str,
+        robot_manager: RobotManager,
+        init_node=True,
+        is_debug=False,
+    ):
         from collections import deque
 
         # import rospy
         # from interbotix_xs_msgs.msg import JointGroupCommand, JointSingleCommand
         # from sensor_msgs.msg import JointState
 
+        self.robot_name = robot_name
+        self.robot_manager = robot_manager
         self.secs = None
         self.nsecs = None
         self._qpos = None
@@ -44,11 +55,10 @@ class Recorder:
         self._qpos = qpos
 
     def update_puppet_state(self):
-        # TODO: Go get data from the Robot
-        self.qpos = data.position
-        self.qvel = data.velocity
-        self.effort = data.effort
-        self.data = data
+        self.qpos = self.robot_manager.get_robot_pos(self.robot_name)
+        # self.qvel = data.velocity
+        # self.effort = data.effort
+        # self.data = data
         if self.is_debug:
             self.joint_timestamps.append(time.time())
 

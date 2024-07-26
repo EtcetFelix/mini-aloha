@@ -19,6 +19,10 @@ TASK_CONFIGS = {
 
 ### ALOHA fixed constants
 DELTA_TIME_STEP = 0.02
+LEFT_LEADER_BOT_NAME = "leader_bot_left"
+RIGHT_LEADER_BOT_NAME = "right_leader_bot"
+LEFT_PUPPET_BOT_NAME = "left_puppet_bot"
+RIGHT_PUPPET_BOT_NAME = "right_puppet_bot"
 
 # Left finger position limits (qpos[7]), right_finger = -1 * left_finger
 MASTER_GRIPPER_POSITION_OPEN = 0.02417

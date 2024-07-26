@@ -5,13 +5,18 @@ import time
 import IPython
 from tqdm import tqdm
 
-from minialoha.scripts.real_env import get_action, make_real_env
+from minialoha.scripts.real_env import make_real_env
 from minialoha.utils.constants import (
     DELTA_TIME_STEP,
+    LEFT_LEADER_BOT_NAME,
+    LEFT_PUPPET_BOT_NAME,
+    RIGHT_LEADER_BOT_NAME,
+    RIGHT_PUPPET_BOT_NAME,
     TASK_CONFIGS,
 )
 from minialoha.utils.dynamixel import Dynamixel
 from minialoha.utils.robot import Robot
+from minialoha.utils.robot_manager import RobotManager
 
 e = IPython.embed
 
@@ -78,23 +83,47 @@ BAUDRATE = 1_000_000
 #     print("Started!")
 
 
-def capture_one_episode(
-    dt, max_timesteps, camera_names, dataset_dir, dataset_name, overwrite
-):
-    print(f"Dataset name: {dataset_name}")
-
+def instantiate_robots() -> RobotManager:
     # source of data
     left_leader_dynamixel = Dynamixel.Config(
         baudrate=BAUDRATE, device_name="COM6"
     ).instantiate()
-    master_bot_left = Robot(left_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
     right_leader_dynamixel = Dynamixel.Config(
         baudrate=BAUDRATE, device_name="COM3"
     ).instantiate()
-    master_bot_right = Robot(right_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
-    env = make_real_env(init_node=False, setup_robots=False)
+    puppet_dynamixel_left = Dynamixel.Config(
+        baudrate=1_000_000, device_name="COM6"
+    ).instantiate()
+    puppet_dynamixel_right = Dynamixel.Config(
+        baudrate=1_000_000, device_name="COM6"
+    ).instantiate()
 
-    # saving dataset
+    puppet_bot_left = Robot(puppet_dynamixel_left, servo_ids=[1, 2, 3, 4, 5])
+    puppet_bot_right = Robot(puppet_dynamixel_right, servo_ids=[1, 2, 3, 4, 5])
+
+    master_bot_left = Robot(left_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
+    master_bot_right = Robot(right_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
+
+    robot_manager = RobotManager(
+        robots={
+            "master_bot_left": master_bot_left,
+            "master_bot_right": master_bot_right,
+            "puppet_bot_left": puppet_bot_left,
+            "puppet_bot_right": puppet_bot_right,
+        },
+        leader_robot_names=[
+            LEFT_LEADER_BOT_NAME,
+            RIGHT_LEADER_BOT_NAME,
+        ],
+        puppet_robot_names=[
+            LEFT_PUPPET_BOT_NAME,
+            RIGHT_PUPPET_BOT_NAME,
+        ],
+    )
+    return robot_manager
+
+
+def save_dataset(dataset_dir, dataset_name: str, overwrite: bool) -> str:
     if not os.path.isdir(dataset_dir):
         os.makedirs(dataset_dir)
     dataset_path = os.path.join(dataset_dir, dataset_name)
@@ -102,7 +131,20 @@ def capture_one_episode(
         print(
             f"Dataset already exist at \n{dataset_path}\nHint: set overwrite to True."
         )
-        exit()
+        raise SystemExit()
+    return dataset_path
+
+
+def capture_one_episode(
+    dt, max_timesteps, camera_names, dataset_dir, dataset_name: str, overwrite: bool
+):
+    print(f"Dataset name: {dataset_name}")
+
+    robot_manager = instantiate_robots()
+
+    env = make_real_env(robot_manager, setup_robots=False)
+
+    dataset_path = save_dataset(dataset_dir, dataset_name, overwrite)
 
     # move all 4 robots to a starting pose where it is easy to start teleoperation, then wait till both gripper closed
     # opening_ceremony(
@@ -116,12 +158,12 @@ def capture_one_episode(
     actual_dt_history = []
     for _ in tqdm(range(max_timesteps)):
         t0 = time.time()
-        action = get_action(master_bot_left, master_bot_right)
+        user_action = env.get_action()
         t1 = time.time()
-        timestep = env.step(action)
+        timestep = env.step(user_action)
         t2 = time.time()
         timesteps.append(timestep)
-        # actions.append(action)
+        actions.append(user_action)
         actual_dt_history.append([t0, t1, t2])
 
     # # Torque on both master bots
