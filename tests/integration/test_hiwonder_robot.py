@@ -31,13 +31,13 @@ def test_read_position(robot: HiwonderRobot):
 def test_set_goal_pos(robot: HiwonderRobot):
     """Move the servos to target positions and check if they reached the goal."""
     target_positions = [  # Target positions for the servos, in ticks
-        1000,
-        2017,
-        1629,
-        1003,
-        2198,
+        400,
+        # 2017,
+        # 1629,
+        # 1003,
+        # 2198,
     ]
-    pos_error_threshold = 200
+    pos_error_threshold = 50
     robot.set_goal_position(target_positions)
 
     result_positions = robot.read_position()

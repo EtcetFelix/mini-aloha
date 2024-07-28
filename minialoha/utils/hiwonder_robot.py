@@ -1,6 +1,6 @@
 from typing import List
 
-from hiwonderbuslinker.bus_control import ServoBus
+from hiwonderbuslinker.bus_control import ServoBus, ServoPosition
 from hiwonderbuslinker.lewansoul_servo_bus import ServoBusCommunication
 
 from minialoha.utils.robot import Robot
@@ -20,8 +20,14 @@ class HiwonderRobot(Robot):
         positions = self.servo_bus.get_bus_position(self.servo_bus_communication)
         return [pos for pos in positions.values()]
 
-    def set_goal_position(self, position: List[int]):
-        pass
+    def set_goal_position(self, positions: List[int]):
+        goal_positions = [
+            ServoPosition(servo_id, pos)
+            for servo_id, pos in zip(self.servo_bus.servo_ids, positions)
+        ]
+        self.servo_bus.set_bus_position(
+            goal_positions, servo_bus=self.servo_bus_communication, time_s=1
+        )
 
     def disable_robot(self):
         pass
