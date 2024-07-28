@@ -2,6 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: cross servo teleop",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "minialoha/scripts/cross_servo_teleop.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python Debugger: record episodes",
             "type": "debugpy",
             "request": "launch",
