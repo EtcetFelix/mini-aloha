@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-from minialoha.utils.robot import DynamixelRobot
+from minialoha.utils.dynamixel_robot import DynamixelRobot
 
 load_dotenv()
 

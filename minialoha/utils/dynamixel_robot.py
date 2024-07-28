@@ -15,6 +15,7 @@ from dynamixel_sdk import (
 )
 
 from minialoha.utils.dynamixel import Dynamixel, OperatingMode, ReadAttribute
+from minialoha.utils.robot import Robot
 
 
 class MotorControlType(Enum):
@@ -24,7 +25,7 @@ class MotorControlType(Enum):
     UNKNOWN = auto()
 
 
-class DynamixelRobot:
+class DynamixelRobot(Robot):
     # def __init__(self, device_name: str, baudrate=1_000_000, servo_ids=[1, 2, 3, 4, 5]):
     def __init__(
         self, dynamixel: Dynamixel, baudrate=1_000_000, servo_ids=[1, 2, 3, 4, 5]
@@ -104,7 +105,7 @@ class DynamixelRobot:
             velocties.append(velocity)
         return velocties
 
-    def set_goal_pos(self, action):
+    def set_goal_position(self, action):
         """
 
         :param action: list or numpy array of target joint positions in range [0, 4096]

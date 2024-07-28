@@ -3,7 +3,7 @@ import logging
 import pytest
 
 from minialoha.utils.dynamixel import Dynamixel
-from minialoha.utils.robot import DynamixelRobot
+from minialoha.utils.dynamixel_robot import DynamixelRobot
 
 logger = logging.getLogger(__name__)
 

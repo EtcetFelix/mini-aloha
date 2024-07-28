@@ -15,7 +15,7 @@ from minialoha.utils.constants import (
     TASK_CONFIGS,
 )
 from minialoha.utils.dynamixel import Dynamixel
-from minialoha.utils.robot import DynamixelRobot
+from minialoha.utils.dynamixel_robot import DynamixelRobot
 from minialoha.utils.robot_manager import RobotManager
 
 e = IPython.embed

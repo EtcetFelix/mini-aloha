@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 
-from minialoha.utils.robot import DynamixelRobot
+from minialoha.utils.dynamixel_robot import DynamixelRobot
 
 
 class RobotManager:

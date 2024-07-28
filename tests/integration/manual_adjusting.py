@@ -1,5 +1,5 @@
 from minialoha.utils.dynamixel import Dynamixel
-from minialoha.utils.robot import DynamixelRobot
+from minialoha.utils.dynamixel_robot import DynamixelRobot
 
 
 def read_position_loop(arm: DynamixelRobot):
