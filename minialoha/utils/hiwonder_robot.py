@@ -31,3 +31,6 @@ class HiwonderRobot(Robot):
 
     def disable_robot(self):
         pass
+
+    def change_servo_id(self, old_servo_id: int, new_servo_id: int):
+        self.servo_bus_communication.id_write(old_servo_id, new_servo_id)

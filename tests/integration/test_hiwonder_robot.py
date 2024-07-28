@@ -51,3 +51,10 @@ def test_set_goal_pos(robot: HiwonderRobot):
             <= result_pos
             <= target_pos + pos_error_threshold
         ), f"Position mismatch at index {indx}. Expected {target_pos}, got {result_positions[indx]}"
+
+
+def test_set_id(robot: HiwonderRobot):
+    """Changes the id of a servo in the robot."""
+    old_servo_id = 1
+    new_servo_id = 2
+    robot.change_servo_id(old_servo_id, new_servo_id)
