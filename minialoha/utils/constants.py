@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-from minialoha.utils.dynamixel_robot import DynamixelRobot
+from minialoha.utils.robot import Robot
 
 load_dotenv()
 
@@ -39,7 +39,7 @@ PUPPET_GRIPPER_JOINT_CLOSE = -0.0
 ############################ Helper functions ############################
 
 
-def prep_robots(leader: DynamixelRobot, follower: DynamixelRobot):
+def prep_robots(leader: Robot, follower: Robot):
     # Make sure to manually adjust both robots to these positions
     # Otherwise they'll move crazy fast and can potentially damage wires
     goal_pos = [
@@ -49,9 +49,9 @@ def prep_robots(leader: DynamixelRobot, follower: DynamixelRobot):
         1003,
         2198,
     ]
-    leader.set_goal_position(action=goal_pos)
+    leader.set_goal_position(goal_pos)
     print(f"Leader position: {leader.read_position()}")
-    follower.set_goal_position(action=goal_pos)
+    follower.set_goal_position(goal_pos)
     print(f"Follower position: {follower.read_position()}")
 
 
