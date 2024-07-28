@@ -7,13 +7,15 @@ from minialoha.utils.dynamixel_robot import DynamixelRobot
 
 logger = logging.getLogger(__name__)
 
+SERVO_IDS = [11, 12, 13, 14, 15]
+
 
 @pytest.fixture
 def leader():
     leader_dynamixel = Dynamixel.Config(
         baudrate=1_000_000, device_name="COM6"
     ).instantiate()
-    leader = DynamixelRobot(leader_dynamixel, servo_ids=[11, 12, 13, 14, 15])
+    leader = DynamixelRobot(leader_dynamixel, servo_ids=SERVO_IDS)
     return leader
 
 
