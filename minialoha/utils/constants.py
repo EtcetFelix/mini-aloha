@@ -49,9 +49,9 @@ def prep_robots(leader: DynamixelRobot, follower: DynamixelRobot):
         1003,
         2198,
     ]
-    leader.set_goal_pos(action=goal_pos)
+    leader.set_goal_position(action=goal_pos)
     print(f"Leader position: {leader.read_position()}")
-    follower.set_goal_pos(action=goal_pos)
+    follower.set_goal_position(action=goal_pos)
     print(f"Follower position: {follower.read_position()}")
 
 

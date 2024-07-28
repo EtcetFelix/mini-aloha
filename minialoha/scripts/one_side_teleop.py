@@ -30,7 +30,7 @@ def teleop(leader: DynamixelRobot, follower: DynamixelRobot):
     while True:
         try:
             # Sync joint and gripper positions
-            follower.set_goal_pos(leader.read_position())
+            follower.set_goal_position(leader.read_position())
         except Exception as e:
             print(e)
             break

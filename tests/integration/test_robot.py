@@ -39,7 +39,7 @@ def test_set_goal_pos(leader: DynamixelRobot):
         2198,
     ]
     pos_error_threshold = 200
-    leader.set_goal_pos(target_positions)
+    leader.set_goal_position(target_positions)
 
     result_positions = leader.read_position()
     logger.info(f"Position: {result_positions}")

@@ -40,7 +40,7 @@ class RobotManager:
         return self.robots[name].read_position()
 
     def set_robot_goal_pos(self, name: str, action):
-        self.robots[name].set_goal_pos(action)
+        self.robots[name].set_goal_position(action)
 
     def shutdown_gracefully(self):
         """
