@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 
-from minialoha.utils.robot import Robot
+from minialoha.utils.robot import DynamixelRobot
 
 
 class RobotManager:
@@ -16,7 +16,7 @@ class RobotManager:
 
     def __init__(
         self,
-        robots: Dict[str, Robot] = {},
+        robots: Dict[str, DynamixelRobot] = {},
         leader_robot_names: List[str] = [],
         puppet_robot_names: List[str] = [],
     ):
@@ -24,7 +24,7 @@ class RobotManager:
         self.leader_robot_names = leader_robot_names
         self.puppet_robot_names = puppet_robot_names
 
-    def add_robot(self, name: str, robot: Robot):
+    def add_robot(self, name: str, robot: DynamixelRobot):
         """
         Adds a robot to the manager.
 

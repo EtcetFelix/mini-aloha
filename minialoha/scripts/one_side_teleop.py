@@ -4,11 +4,11 @@ import time
 
 from minialoha.utils.constants import DELTA_TIME_STEP, prep_robots
 from minialoha.utils.dynamixel import Dynamixel
-from minialoha.utils.robot import Robot
+from minialoha.utils.robot import DynamixelRobot
 from minialoha.utils.robot_manager import RobotManager
 
 
-def press_to_start(leader: Robot):
+def press_to_start(leader: DynamixelRobot):
     trigger_goal_pos = 2500
     leader.set_trigger_waiting_torque(trigger_goal_pos)
     time.sleep(DELTA_TIME_STEP * 10)
@@ -25,7 +25,7 @@ def press_to_start(leader: Robot):
     leader.set_trigger_torque()
 
 
-def teleop(leader: Robot, follower: Robot):
+def teleop(leader: DynamixelRobot, follower: DynamixelRobot):
     """A standalone function for experimenting with teleoperation. No data recording."""
     while True:
         try:
@@ -47,11 +47,11 @@ def main(robo_manager: RobotManager):
     ).instantiate()
     robo_manager.add_robot(
         "follower",
-        Robot(follower_dynamixel, servo_ids=[1, 2, 3, 4, 5]),
+        DynamixelRobot(follower_dynamixel, servo_ids=[1, 2, 3, 4, 5]),
     )
     robo_manager.add_robot(
         "leader",
-        Robot(leader_dynamixel, servo_ids=[11, 12, 13, 14, 15]),
+        DynamixelRobot(leader_dynamixel, servo_ids=[11, 12, 13, 14, 15]),
     )
     leader = robo_manager.get_robot("leader")
     follower = robo_manager.get_robot("follower")

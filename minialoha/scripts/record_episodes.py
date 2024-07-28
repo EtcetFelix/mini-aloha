@@ -15,7 +15,7 @@ from minialoha.utils.constants import (
     TASK_CONFIGS,
 )
 from minialoha.utils.dynamixel import Dynamixel
-from minialoha.utils.robot import Robot
+from minialoha.utils.robot import DynamixelRobot
 from minialoha.utils.robot_manager import RobotManager
 
 e = IPython.embed
@@ -98,11 +98,11 @@ def instantiate_robots() -> RobotManager:
         baudrate=1_000_000, device_name="COM6"
     ).instantiate()
 
-    puppet_bot_left = Robot(puppet_dynamixel_left, servo_ids=[1, 2, 3, 4, 5])
-    puppet_bot_right = Robot(puppet_dynamixel_right, servo_ids=[1, 2, 3, 4, 5])
+    puppet_bot_left = DynamixelRobot(puppet_dynamixel_left, servo_ids=[1, 2, 3, 4, 5])
+    puppet_bot_right = DynamixelRobot(puppet_dynamixel_right, servo_ids=[1, 2, 3, 4, 5])
 
-    master_bot_left = Robot(left_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
-    master_bot_right = Robot(right_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
+    master_bot_left = DynamixelRobot(left_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
+    master_bot_right = DynamixelRobot(right_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
 
     robot_manager = RobotManager(
         robots={

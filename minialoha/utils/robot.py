@@ -24,7 +24,7 @@ class MotorControlType(Enum):
     UNKNOWN = auto()
 
 
-class Robot:
+class DynamixelRobot:
     # def __init__(self, device_name: str, baudrate=1_000_000, servo_ids=[1, 2, 3, 4, 5]):
     def __init__(
         self, dynamixel: Dynamixel, baudrate=1_000_000, servo_ids=[1, 2, 3, 4, 5]
@@ -204,7 +204,7 @@ class Robot:
 
 
 if __name__ == "__main__":
-    robot = Robot(device_name="/dev/tty.usbmodem57380045631")
+    robot = DynamixelRobot(device_name="/dev/tty.usbmodem57380045631")
     robot._disable_torque()
     for _ in range(10000):
         s = time.time()
