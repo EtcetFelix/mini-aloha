@@ -26,7 +26,7 @@ class HiwonderRobot(Robot):
             for servo_id, pos in zip(self.servo_bus.servo_ids, positions)
         ]
         self.servo_bus.set_bus_position(
-            goal_positions, servo_bus=self.servo_bus_communication, time_s=1
+            goal_positions, servo_bus=self.servo_bus_communication, time_s=0.2
         )
 
     def disable_robot(self):

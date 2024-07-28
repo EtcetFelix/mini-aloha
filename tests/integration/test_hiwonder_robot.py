@@ -7,7 +7,7 @@ from minialoha.utils.hiwonder_robot import HiwonderRobot
 logger = logging.getLogger(__name__)
 
 COM_PORT = "COM5"
-SERVO_IDS = [1]
+SERVO_IDS = [1, 2, 3, 4, 5]
 
 
 @pytest.fixture
@@ -32,10 +32,10 @@ def test_set_goal_pos(robot: HiwonderRobot):
     """Move the servos to target positions and check if they reached the goal."""
     target_positions = [  # Target positions for the servos, in ticks
         400,
-        # 2017,
-        # 1629,
-        # 1003,
-        # 2198,
+        400,
+        400,
+        100,
+        750,
     ]
     pos_error_threshold = 50
     robot.set_goal_position(target_positions)
