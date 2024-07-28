@@ -7,7 +7,7 @@ from minialoha.utils.robot import Robot
 
 
 class HiwonderRobot(Robot):
-    """Interface for controlling a robot."""
+    """Class for controlling a hiwonder robot."""
 
     def __init__(
         self, port="COM1", leader_id=1, pre_existing_servo_ids=[2, 3, 4]
