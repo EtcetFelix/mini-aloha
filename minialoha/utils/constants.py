@@ -13,7 +13,8 @@ TASK_CONFIGS = {
         "dataset_dir": DATA_DIR + "/aloha_wear_shoe",
         "num_episodes": 50,
         "episode_len": 1000,
-        "camera_names": ["cam_high", "cam_low", "cam_left_wrist", "cam_right_wrist"],
+        "camera_names": [],
+        # "camera_names": ["cam_high", "cam_low", "cam_left_wrist", "cam_right_wrist"],
     },
 }
 

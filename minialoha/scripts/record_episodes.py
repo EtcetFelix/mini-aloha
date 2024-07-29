@@ -2,7 +2,9 @@ import argparse
 import os
 import time
 
+import h5py
 import IPython
+import numpy as np
 from tqdm import tqdm
 
 from minialoha.scripts.real_env import make_real_env
@@ -123,6 +125,32 @@ def save_dataset(dataset_dir, dataset_name: str, overwrite: bool) -> str:
     return dataset_path
 
 
+def save_to_hdf5(data_dict, dataset_path, camera_names, max_timesteps):
+    # HDF5
+    t0 = time.time()
+    with h5py.File(dataset_path + ".hdf5", "w", rdcc_nbytes=1024**2 * 2) as root:
+        root.attrs["sim"] = False
+        obs = root.create_group("observations")
+        image = obs.create_group("images")
+        for cam_name in camera_names:
+            _ = image.create_dataset(
+                cam_name,
+                (max_timesteps, 480, 640, 3),
+                dtype="uint8",
+                chunks=(1, 480, 640, 3),
+            )
+            # compression='gzip',compression_opts=2,)
+            # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
+        _ = obs.create_dataset("qpos", (max_timesteps, 14))
+        _ = obs.create_dataset("qvel", (max_timesteps, 14))
+        _ = obs.create_dataset("effort", (max_timesteps, 14))
+        _ = root.create_dataset("action", (max_timesteps, 14))
+
+        for name, array in data_dict.items():
+            root[name][...] = array
+    print(f"Saving: {time.time() - t0:.1f} secs")
+
+
 def capture_one_episode(
     dt, max_timesteps, camera_names, dataset_dir, dataset_name: str, overwrite: bool
 ):
@@ -164,71 +192,49 @@ def capture_one_episode(
     #     move_time=0.5,
     # )
 
-    # freq_mean = print_dt_diagnosis(actual_dt_history)
+    freq_mean = print_dt_diagnosis(actual_dt_history)
     # if freq_mean < 42:
     #     return False
 
-    # """
-    # For each timestep:
-    # observations
-    # - images
-    #     - cam_high          (480, 640, 3) 'uint8'
-    #     - cam_low           (480, 640, 3) 'uint8'
-    #     - cam_left_wrist    (480, 640, 3) 'uint8'
-    #     - cam_right_wrist   (480, 640, 3) 'uint8'
-    # - qpos                  (14,)         'float64'
-    # - qvel                  (14,)         'float64'
+    """
+    For each timestep:
+    observations
+    - images
+        - cam_high          (480, 640, 3) 'uint8'
+        - cam_low           (480, 640, 3) 'uint8'
+        - cam_left_wrist    (480, 640, 3) 'uint8'
+        - cam_right_wrist   (480, 640, 3) 'uint8'
+    - qpos                  (14,)         'float64'
+    - qvel                  (14,)         'float64'
 
-    # action                  (14,)         'float64'
-    # """
+    action                  (14,)         'float64'
+    """
 
-    # data_dict = {
-    #     "/observations/qpos": [],
-    #     "/observations/qvel": [],
-    #     "/observations/effort": [],
-    #     "/action": [],
-    # }
-    # for cam_name in camera_names:
-    #     data_dict[f"/observations/images/{cam_name}"] = []
+    data_dict = {
+        "/observations/qpos": [],
+        "/observations/qvel": [],
+        "/observations/effort": [],
+        "/action": [],
+    }
+    for cam_name in camera_names:
+        data_dict[f"/observations/images/{cam_name}"] = []
 
-    # # len(action): max_timesteps, len(time_steps): max_timesteps + 1
-    # while actions:
-    #     action = actions.pop(0)
-    #     timestep = timesteps.pop(0)
-    #     data_dict["/observations/qpos"].append(timestep.observation["qpos"])
-    #     data_dict["/observations/qvel"].append(timestep.observation["qvel"])
-    #     data_dict["/observations/effort"].append(timestep.observation["effort"])
-    #     data_dict["/action"].append(action)
-    #     for cam_name in camera_names:
-    #         data_dict[f"/observations/images/{cam_name}"].append(
-    #             timestep.observation["images"][cam_name]
-    #         )
+    # len(action): max_timesteps, len(time_steps): max_timesteps + 1
+    while actions:
+        action = actions.pop(0)
+        timestep = timesteps.pop(0)
+        data_dict["/observations/qpos"].append(timestep.observation["qpos"])
+        # data_dict["/observations/qvel"].append(timestep.observation["qvel"])
+        # data_dict["/observations/effort"].append(timestep.observation["effort"])
+        data_dict["/action"].append(action)
+        for cam_name in camera_names:
+            data_dict[f"/observations/images/{cam_name}"].append(
+                timestep.observation["images"][cam_name]
+            )
 
-    # # HDF5
-    # t0 = time.time()
-    # with h5py.File(dataset_path + ".hdf5", "w", rdcc_nbytes=1024**2 * 2) as root:
-    #     root.attrs["sim"] = False
-    #     obs = root.create_group("observations")
-    #     image = obs.create_group("images")
-    #     for cam_name in camera_names:
-    #         _ = image.create_dataset(
-    #             cam_name,
-    #             (max_timesteps, 480, 640, 3),
-    #             dtype="uint8",
-    #             chunks=(1, 480, 640, 3),
-    #         )
-    #         # compression='gzip',compression_opts=2,)
-    #         # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
-    #     _ = obs.create_dataset("qpos", (max_timesteps, 14))
-    #     _ = obs.create_dataset("qvel", (max_timesteps, 14))
-    #     _ = obs.create_dataset("effort", (max_timesteps, 14))
-    #     _ = root.create_dataset("action", (max_timesteps, 14))
+    save_to_hdf5(data_dict, dataset_path, camera_names, max_timesteps)
 
-    #     for name, array in data_dict.items():
-    #         root[name][...] = array
-    # print(f"Saving: {time.time() - t0:.1f} secs")
-
-    # return True
+    return True
 
 
 def main(args):
@@ -271,19 +277,19 @@ def get_auto_index(dataset_dir, dataset_name_prefix="", data_suffix="hdf5"):
     raise Exception(f"Error getting auto index, or more than {max_idx} episodes")
 
 
-# def print_dt_diagnosis(actual_dt_history):
-#     actual_dt_history = np.array(actual_dt_history)
-#     get_action_time = actual_dt_history[:, 1] - actual_dt_history[:, 0]
-#     step_env_time = actual_dt_history[:, 2] - actual_dt_history[:, 1]
-#     total_time = actual_dt_history[:, 2] - actual_dt_history[:, 0]
+def print_dt_diagnosis(actual_dt_history):
+    actual_dt_history = np.array(actual_dt_history)
+    get_action_time = actual_dt_history[:, 1] - actual_dt_history[:, 0]
+    step_env_time = actual_dt_history[:, 2] - actual_dt_history[:, 1]
+    total_time = actual_dt_history[:, 2] - actual_dt_history[:, 0]
 
-#     dt_mean = np.mean(total_time)
-#     dt_std = np.std(total_time)
-#     freq_mean = 1 / dt_mean
-#     print(
-#         f"Avg freq: {freq_mean:.2f} Get action: {np.mean(get_action_time):.3f} Step env: {np.mean(step_env_time):.3f}"
-#     )
-#     return freq_mean
+    dt_mean = np.mean(total_time)
+    dt_std = np.std(total_time)
+    freq_mean = 1 / dt_mean
+    print(
+        f"Avg freq: {freq_mean:.2f} Get action: {np.mean(get_action_time):.3f} Step env: {np.mean(step_env_time):.3f}"
+    )
+    return freq_mean
 
 
 # def debug():
