@@ -10,8 +10,6 @@ from minialoha.utils.constants import (
     DELTA_TIME_STEP,
     LEFT_LEADER_BOT_NAME,
     LEFT_PUPPET_BOT_NAME,
-    RIGHT_LEADER_BOT_NAME,
-    RIGHT_PUPPET_BOT_NAME,
     TASK_CONFIGS,
 )
 from minialoha.utils.dynamixel import Dynamixel
@@ -88,36 +86,26 @@ def instantiate_robots() -> RobotManager:
     left_leader_dynamixel = Dynamixel.Config(
         baudrate=BAUDRATE, device_name="COM6"
     ).instantiate()
-    right_leader_dynamixel = Dynamixel.Config(
-        baudrate=BAUDRATE, device_name="COM3"
-    ).instantiate()
     puppet_dynamixel_left = Dynamixel.Config(
-        baudrate=1_000_000, device_name="COM6"
-    ).instantiate()
-    puppet_dynamixel_right = Dynamixel.Config(
-        baudrate=1_000_000, device_name="COM6"
+        baudrate=1_000_000, device_name="COM3"
     ).instantiate()
 
     puppet_bot_left = DynamixelRobot(puppet_dynamixel_left, servo_ids=[1, 2, 3, 4, 5])
-    puppet_bot_right = DynamixelRobot(puppet_dynamixel_right, servo_ids=[1, 2, 3, 4, 5])
 
-    master_bot_left = DynamixelRobot(left_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
-    master_bot_right = DynamixelRobot(right_leader_dynamixel, servo_ids=[1, 2, 3, 4, 5])
+    master_bot_left = DynamixelRobot(
+        left_leader_dynamixel, servo_ids=[11, 12, 13, 14, 15]
+    )
 
     robot_manager = RobotManager(
         robots={
-            "master_bot_left": master_bot_left,
-            "master_bot_right": master_bot_right,
-            "puppet_bot_left": puppet_bot_left,
-            "puppet_bot_right": puppet_bot_right,
+            LEFT_LEADER_BOT_NAME: master_bot_left,
+            LEFT_PUPPET_BOT_NAME: puppet_bot_left,
         },
         leader_robot_names=[
             LEFT_LEADER_BOT_NAME,
-            RIGHT_LEADER_BOT_NAME,
         ],
         puppet_robot_names=[
             LEFT_PUPPET_BOT_NAME,
-            RIGHT_PUPPET_BOT_NAME,
         ],
     )
     return robot_manager

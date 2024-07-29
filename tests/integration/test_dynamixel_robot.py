@@ -7,8 +7,9 @@ from minialoha.utils.dynamixel_robot import DynamixelRobot
 
 logger = logging.getLogger(__name__)
 
-COM_PORT = "COM6"
-SERVO_IDS = [11]  # , 12, 13, 14, 15]
+COM_PORT = "COM3"
+SERVO_IDS = [11, 12, 13, 14, 15]
+SERVO_IDS = [1, 2, 3, 4, 5]
 
 
 @pytest.fixture

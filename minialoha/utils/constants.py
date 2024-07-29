@@ -55,6 +55,8 @@ def prep_robots(leader: Robot, follower: Robot):
     print(f"Follower position: {follower.read_position()}")
 
 
+NUM_JOINTS_ON_ROBOT = 5
+GRIPPER_INDEX = 4
 PUPPET_GRIPPER_POSITION_NORMALIZE_FN = lambda x: (x - PUPPET_GRIPPER_POSITION_CLOSE) / (
     PUPPET_GRIPPER_POSITION_OPEN - PUPPET_GRIPPER_POSITION_CLOSE
 )

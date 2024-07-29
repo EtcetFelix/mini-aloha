@@ -10,9 +10,9 @@ from numpy.typing import NDArray
 
 from minialoha.utils.constants import (
     DELTA_TIME_STEP,
-    LEFT_PUPPET_BOT_NAME,
+    GRIPPER_INDEX,
+    NUM_JOINTS_ON_ROBOT,
     PUPPET_GRIPPER_POSITION_NORMALIZE_FN,
-    RIGHT_PUPPET_BOT_NAME,
 )
 from minialoha.utils.robot_manager import RobotManager
 
@@ -30,8 +30,6 @@ from minialoha.utils.robot_utils import (
 )
 
 # e = IPython.embed
-
-NUM_JOINTS_ON_ROBOT = 6
 
 
 class RealEnv:
@@ -65,14 +63,9 @@ class RealEnv:
             self.setup_robots()
 
         self.robot_manager = robot_manager
-        self.recorder_left = Recorder(
-            LEFT_PUPPET_BOT_NAME, self.robot_manager, init_node=False
-        )
-        self.recorder_right = Recorder(
-            RIGHT_PUPPET_BOT_NAME, self.robot_manager, init_node=False
-        )
-        self.recorders = [self.recorder_right, self.recorder_left]
-
+        self.recorders = {}
+        for robot_name in robot_manager.puppet_robot_names:
+            self.recorders[robot_name] = Recorder(robot_name, self.robot_manager)
         # self.image_recorder = ImageRecorder(init_node=False)
         # self.gripper_command = JointSingleCommand(name="gripper")
 
@@ -81,21 +74,17 @@ class RealEnv:
         setup_puppet_bot(self.puppet_bot_right)
 
     def get_qpos(self) -> NDArray[np.float64]:
-        for recorder in self.recorders:
+        positions = []
+        for recorder in self.recorders.values():
             recorder.update_puppet_state()
-        left_qpos_raw = self.recorder_left.qpos
-        right_qpos_raw = self.recorder_right.qpos
-        left_arm_qpos = left_qpos_raw[:6]
-        right_arm_qpos = right_qpos_raw[:6]
-        left_gripper_qpos = [
-            PUPPET_GRIPPER_POSITION_NORMALIZE_FN(left_qpos_raw[7])
-        ]  # this is position not joint
-        right_gripper_qpos = [
-            PUPPET_GRIPPER_POSITION_NORMALIZE_FN(right_qpos_raw[7])
-        ]  # this is position not joint
-        return np.concatenate(
-            [left_arm_qpos, left_gripper_qpos, right_arm_qpos, right_gripper_qpos]
-        )
+            qpos_raw = recorder.qpos
+            qpos = qpos_raw[:NUM_JOINTS_ON_ROBOT]
+            gripper_qpos = [
+                PUPPET_GRIPPER_POSITION_NORMALIZE_FN(qpos_raw[GRIPPER_INDEX])
+            ]  # this is position not joint
+            positions.append(qpos)
+            positions.append(gripper_qpos)
+        return np.concatenate(positions)
 
     # def get_qvel(self):
     #     left_qvel_raw = self.recorder_left.qvel
@@ -184,11 +173,11 @@ class RealEnv:
         state_len = int(len(action) / len(puppet_robots))
 
         # Set the goal pos for all puppet bots
-        for puppet_index, puppet_bot in enumerate(puppet_robots):
-            action_index = puppet_index * state_len
-            action_for_puppet = action[action_index : action_index + puppet_index]
+        for puppet_index, puppet_bot_name in enumerate(puppet_robots):
+            joint_index = NUM_JOINTS_ON_ROBOT * puppet_index
+            action_for_puppet = action[joint_index : joint_index + NUM_JOINTS_ON_ROBOT]
             self.robot_manager.set_robot_goal_pos(
-                puppet_bot, action_for_puppet[:NUM_JOINTS_ON_ROBOT]
+                puppet_bot_name, action_for_puppet[:NUM_JOINTS_ON_ROBOT]
             )
 
         time.sleep(DELTA_TIME_STEP)
@@ -199,20 +188,20 @@ class RealEnv:
             observation=self.get_observation(),
         )
 
-    def get_action(self) -> NDArray[np.float64]:
+    def get_action(self) -> NDArray[np.int32]:
         leader_robots = self.robot_manager.leader_robot_names
-        num_arms = 2
         action = np.zeros(
-            (NUM_JOINTS_ON_ROBOT + 1) * num_arms
-        )  # 6 joint + 1 gripper, for two arms
+            (NUM_JOINTS_ON_ROBOT) * len(leader_robots), dtype=np.int32
+        )  # joints + 1 gripper, for each arm
 
         # Get all the leader robot actions
         for robot_index, leader_robot in enumerate(leader_robots):
             robot_action = self.robot_manager.get_robot_pos(leader_robot)[
                 :NUM_JOINTS_ON_ROBOT
             ]
-            action_index = NUM_JOINTS_ON_ROBOT * robot_index
-            action[action_index : NUM_JOINTS_ON_ROBOT + action_index] = robot_action
+            # Update the list of joint positions to the action array
+            joint_index = NUM_JOINTS_ON_ROBOT * robot_index
+            action[joint_index : NUM_JOINTS_ON_ROBOT + joint_index] = robot_action
 
         return action
 
