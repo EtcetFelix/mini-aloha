@@ -19,6 +19,7 @@ def dynamixel_to_hiwonder_position(dynamixel_positions: List[int]) -> List[int]:
     """
     Translate a dynamixel position and return a hiwonder robot position.
 
+    WARNING: EXperimental, has not been fully tested at the moment.
     Dynamixel has a resolution of 4096 ticks/revolution.
     Hiwonder goes from -192 to 1193, but 'officially,' it goes from 0 to 1000.
 
@@ -38,9 +39,9 @@ def dynamixel_to_hiwonder_position(dynamixel_positions: List[int]) -> List[int]:
         normalized_position = pos / NORMALIZATION_VALUE
         hiwonder_positions.append(normalized_position)
 
-    # # Round the positions to convert to integers
-    # for indx, pos in enumerate(hiwonder_positions):
-    #     hiwonder_positions[indx] = round(pos)
+    # Round the positions to convert to integers
+    for indx, pos in enumerate(hiwonder_positions):
+        hiwonder_positions[indx] = round(pos)
     return hiwonder_positions
 
 

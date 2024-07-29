@@ -31,19 +31,13 @@ def test_read_position(robot: HiwonderRobot):
     assert pos is not None, "Failed to read position"
 
 
-# def test_read_velocity(robot: HiwonderRobot):
-#     velocity = robot.read_velocity()
-#     logger.info(f"Velocity: {velocity}")
-#     assert velocity is not None, "Failed to read velocity"
-
-
 def test_set_goal_pos(robot: HiwonderRobot):
     """Move the servos to target positions and check if they reached the goal."""
     target_positions = [  # Target positions for the servos, in ticks
         400,
+        350,
+        200,
         400,
-        400,
-        100,
         750,
     ]
     pos_error_threshold = 100

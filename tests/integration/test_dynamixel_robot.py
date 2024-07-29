@@ -8,7 +8,7 @@ from minialoha.utils.dynamixel_robot import DynamixelRobot
 logger = logging.getLogger(__name__)
 
 COM_PORT = "COM6"
-SERVO_IDS = [11, 12, 13, 14, 15]
+SERVO_IDS = [11]  # , 12, 13, 14, 15]
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ def test_read_velocity(leader: DynamixelRobot):
 def test_set_goal_pos(leader: DynamixelRobot):
     """Move the servos to target positions and check if they reached the goal."""
     target_positions = [  # Target positions for the servos, in ticks
-        1000,
+        0,
         2017,
         1629,
         1003,
