@@ -29,6 +29,12 @@
             "request": "launch",
             "program": "minialoha/scripts/one_side_teleop.py",
             "console": "integratedTerminal"
-        }
+        },
+        {
+            "name": "Debug Unit Test",
+            "type": "python",
+            "request": "test",
+            "justMyCode": false,
+        },
     ]
 }

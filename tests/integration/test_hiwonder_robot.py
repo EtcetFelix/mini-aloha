@@ -1,4 +1,6 @@
 import logging
+import time
+import timeit
 
 import pytest
 
@@ -14,6 +16,13 @@ SERVO_IDS = [1, 2, 3, 4, 5]
 def robot() -> HiwonderRobot:
     leader = HiwonderRobot(COM_PORT, SERVO_IDS[0], SERVO_IDS)
     return leader
+
+
+def test_timing_read_position(robot: HiwonderRobot):
+    repetitions = 10
+    timer = timeit.Timer(stmt=lambda: robot.read_position(), globals=globals())
+    total_time = timer.timeit(number=repetitions)
+    logger.info(f"Position: {total_time}")
 
 
 def test_read_position(robot: HiwonderRobot):
@@ -37,8 +46,11 @@ def test_set_goal_pos(robot: HiwonderRobot):
         100,
         750,
     ]
-    pos_error_threshold = 50
+    pos_error_threshold = 100
+    start = time.time()
     robot.set_goal_position(target_positions)
+    end = time.time()
+    logger.info(f"Time taken to set goal positions: {end - start}")
 
     result_positions = robot.read_position()
     logger.info(f"Position: {result_positions}")

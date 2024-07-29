@@ -1,9 +1,12 @@
+import logging
 from typing import List
 
 from hiwonderbuslinker.bus_control import ServoBus, ServoPosition
 from hiwonderbuslinker.lewansoul_servo_bus import ServoBusCommunication
 
 from minialoha.utils.robot import Robot
+
+logger = logging.getLogger(__name__)
 
 
 class HiwonderRobot(Robot):
@@ -14,7 +17,7 @@ class HiwonderRobot(Robot):
     ) -> None:
         super().__init__()
         self.servo_bus = ServoBus(port, leader_id, pre_existing_servo_ids)
-        self.servo_bus_communication = ServoBusCommunication(port)
+        self.servo_bus_communication = ServoBusCommunication(port, timeout=0.1)
 
     def read_position(self) -> List[int]:
         positions = self.servo_bus.get_bus_position(self.servo_bus_communication)
@@ -22,11 +25,11 @@ class HiwonderRobot(Robot):
 
     def set_goal_position(self, positions: List[int]):
         goal_positions = [
-            ServoPosition(servo_id, pos)
+            ServoPosition(servo_id, position=pos)
             for servo_id, pos in zip(self.servo_bus.servo_ids, positions)
         ]
         self.servo_bus.set_bus_position(
-            goal_positions, servo_bus=self.servo_bus_communication, time_s=0.2
+            goal_positions, servo_bus=self.servo_bus_communication, time_s=0.1
         )
 
     def disable_robot(self):
