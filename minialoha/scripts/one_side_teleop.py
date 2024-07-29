@@ -2,28 +2,10 @@ import os
 import sys
 import time
 
+from minialoha.utils.constants import DELTA_TIME_STEP, prep_robots
 from minialoha.utils.dynamixel import Dynamixel
 from minialoha.utils.robot import Robot
 from minialoha.utils.robot_manager import RobotManager
-
-# fixed constants
-DELTA_TIME_STEP = 0.02
-
-
-def prep_robots(leader: Robot, follower: Robot):
-    # Make sure to manually adjust both robots to these positions
-    # Otherwise they'll move crazy fast and can potentially damage wires
-    goal_pos = [
-        1000,
-        1796,
-        1629,
-        1003,
-        2198,
-    ]
-    leader.set_goal_pos(action=goal_pos)
-    print(f"Leader position: {leader.read_position()}")
-    follower.set_goal_pos(action=goal_pos)
-    print(f"Follower position: {follower.read_position()}")
 
 
 def press_to_start(leader: Robot):

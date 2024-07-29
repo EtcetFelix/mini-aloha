@@ -9,13 +9,17 @@ readme = "README.md"
 python = "^3.12"
 dynamixel-sdk = "*"
 numpy = "*"
+dm_env = "*"
+matplotlib = "*"
+h5py = "*"
+python-dotenv = "*"
+tqdm = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.0.0"
 pytest-mock = "*"
 ipython = "*"
 ruff = "*"
-
 
 [build-system]
 requires = ["poetry-core"]
