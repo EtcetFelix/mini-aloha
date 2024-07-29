@@ -355,6 +355,24 @@ files = [
 numpy = ">=1.17.3"
 
 [[package]]
+name = "hiwonderbuslinker"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.12"
+files = []
+develop = true
+
+[package.dependencies]
+pyserial = "^3.5"
+
+[package.source]
+type = "git"
+url = "https://github.com/EtcetFelix/HiWonder-BusLinker-servo-bus.git"
+reference = "HEAD"
+resolved_reference = "7576df0956b123472230b4f5b073e1d8b34f2827"
+
+[[package]]
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
@@ -1083,4 +1101,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "b6ee07cad7667f7dd060e330eab7ea3cca62c0b34c10054c135022ea6bd3f09d"
+content-hash = "7aa8ba89c96f6f336e1c59057d68a1460a905d9752ec029e8d1046af34f6daec"

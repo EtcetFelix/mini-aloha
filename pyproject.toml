@@ -14,6 +14,7 @@ matplotlib = "*"
 h5py = "*"
 python-dotenv = "*"
 tqdm = "*"
+hiwonderbuslinker = {git = "https://github.com/EtcetFelix/HiWonder-BusLinker-servo-bus.git", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.0.0"
