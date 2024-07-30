@@ -1,6 +1,7 @@
 import argparse
 import os
 import time
+from typing import List
 
 import IPython
 import numpy as np
@@ -13,7 +14,7 @@ from minialoha.utils.constants import (
     LEFT_PUPPET_BOT_NAME,
     TASK_CONFIGS,
 )
-from minialoha.utils.data_utils import save_to_hdf5
+from minialoha.utils.data_utils import create_dataset_path, save_to_hdf5
 from minialoha.utils.dynamixel import Dynamixel
 from minialoha.utils.dynamixel_robot import DynamixelRobot
 from minialoha.utils.robot_manager import RobotManager
@@ -113,18 +114,6 @@ def instantiate_robots() -> RobotManager:
     return robot_manager
 
 
-def create_dataset_path(dataset_dir, dataset_name: str, overwrite: bool) -> str:
-    if not os.path.isdir(dataset_dir):
-        os.makedirs(dataset_dir)
-    dataset_path = os.path.join(dataset_dir, dataset_name)
-    if os.path.isfile(dataset_path) and not overwrite:
-        print(
-            f"Dataset already exist at \n{dataset_path}\nHint: set overwrite to True."
-        )
-        raise SystemExit()
-    return dataset_path
-
-
 def prepare_data_for_export(camera_names, actions, timesteps):
     data_dict = {
         "/observations/qpos": [],
@@ -151,7 +140,12 @@ def prepare_data_for_export(camera_names, actions, timesteps):
 
 
 def capture_one_episode(
-    dt, max_timesteps, camera_names, dataset_dir, dataset_name: str, overwrite: bool
+    dt,
+    max_timesteps: int,
+    camera_names: List[str],
+    dataset_dir,
+    dataset_name: str,
+    overwrite: bool,
 ):
     print(f"Dataset name: {dataset_name}")
 
@@ -159,7 +153,7 @@ def capture_one_episode(
 
     env = make_real_env(robot_manager, setup_robots=False)
 
-    dataset_path = create_dataset_path(dataset_dir, dataset_name, overwrite)
+    dataset_path = create_dataset_path(dataset_dir, dataset_name + ".hdf5", overwrite)
 
     # move all 4 robots to a starting pose where it is easy to start teleoperation, then wait till both gripper closed
     # opening_ceremony(

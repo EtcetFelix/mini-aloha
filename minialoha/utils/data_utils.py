@@ -1,12 +1,33 @@
+import os
 import time
+from typing import Any, Dict, List
 
 import h5py
 
 
-def save_to_hdf5(data_dict, dataset_path, camera_names, max_timesteps):
+def create_dataset_path(dataset_dir, dataset_filename: str, overwrite: bool) -> str:
+    """Create the path in the filesystem for the dataset."""
+    if not os.path.isdir(dataset_dir):
+        os.makedirs(dataset_dir)
+    dataset_path = os.path.join(dataset_dir, dataset_filename)
+    if os.path.isfile(dataset_path) and not overwrite:
+        print(
+            f"Dataset already exist at \n{dataset_path}\nHint: set overwrite to True."
+        )
+        raise SystemExit()
+    return dataset_path
+
+
+def save_to_hdf5(
+    data_dict: Dict[str, Any],
+    dataset_path: str,
+    camera_names: List[str],
+    max_timesteps: int,
+):
+    """Save data_dict to HDF5 file at dataset_path."""
     # HDF5
     t0 = time.time()
-    with h5py.File(dataset_path + ".hdf5", "w", rdcc_nbytes=1024**2 * 2) as root:
+    with h5py.File(dataset_path, "w", rdcc_nbytes=1024**2 * 2) as root:
         root.attrs["sim"] = False
         obs = root.create_group("observations")
         image = obs.create_group("images")
