@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from minialoha.utils.data_utils import create_dataset_path
+from minialoha.utils.data_utils import create_dataset_path, save_to_hdf5
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ def test_save_to_hdf5(data_dict, data_test_dir_path):
     camera_names = []
     max_timesteps = 3
 
-    logger.info(dataset_path)
+    logger.info(f"dataset_path: {dataset_path}")
     # TODO: Ensure the save_to_hdf5 file correctly creates a file
     # TODO: Manage deleting the file after testing
-    # save_to_hdf5(data_dict, dataset_path, camera_names, max_timesteps)
+    save_to_hdf5(data_dict, dataset_path, camera_names, max_timesteps)
