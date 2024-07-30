@@ -4,6 +4,10 @@ from typing import Any, Dict, List
 
 import h5py
 
+from minialoha.utils.constants import NUM_JOINTS_ON_ROBOT, NUM_LEADER_ROBOTS
+
+TOTAL_NUM_LEADER_JOINTS = NUM_LEADER_ROBOTS * NUM_JOINTS_ON_ROBOT
+
 
 def create_dataset_path(dataset_dir, dataset_filename: str, overwrite: bool) -> str:
     """Create the path in the filesystem for the dataset."""
@@ -40,10 +44,10 @@ def save_to_hdf5(
             )
             # compression='gzip',compression_opts=2,)
             # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
-        _ = obs.create_dataset("qpos", (max_timesteps, 14))
-        _ = obs.create_dataset("qvel", (max_timesteps, 14))
-        _ = obs.create_dataset("effort", (max_timesteps, 14))
-        _ = root.create_dataset("action", (max_timesteps, 14))
+        _ = obs.create_dataset("qpos", (max_timesteps, TOTAL_NUM_LEADER_JOINTS))
+        _ = obs.create_dataset("qvel", (max_timesteps, TOTAL_NUM_LEADER_JOINTS))
+        _ = obs.create_dataset("effort", (max_timesteps, TOTAL_NUM_LEADER_JOINTS))
+        _ = root.create_dataset("action", (max_timesteps, TOTAL_NUM_LEADER_JOINTS))
 
         for name, array in data_dict.items():
             dataset = root[name]

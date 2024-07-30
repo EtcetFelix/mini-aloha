@@ -21,12 +21,12 @@ def data_dict():
     """Return a dictionary for testing save_to_hdf5."""
     data_dict = {
         "/observations/qpos": [
-            np.array([3497.0, 1893.0, 1121.0, 903.0, 2058.0, 51969.23232323]),
-            np.array([3485.0, 1886.0, 1121.0, 906.0, 2065.0, 52146.0]),
-            np.array([3412.0, 1863.0, 1123.0, 942.0, 2085.0, 52651.05050505]),
+            np.array([3497.0, 1893.0, 1121.0, 903.0, 2058.0]),
+            np.array([3485.0, 1886.0, 1121.0, 906.0, 2065.0]),
+            np.array([3412.0, 1863.0, 1123.0, 942.0, 2085.0]),
         ],
-        "/observations/qvel": [],
-        "/observations/effort": [],
+        # "/observations/qvel": [],
+        # "/observations/effort": [],
         "/action": [
             np.array([2762, 1818, 1127, 1073, 2120], dtype=np.int32),
             np.array([2762, 1818, 1127, 1073, 2120], dtype=np.int32),
@@ -48,6 +48,5 @@ def test_save_to_hdf5(data_dict, data_test_dir_path):
     max_timesteps = 3
 
     logger.info(f"dataset_path: {dataset_path}")
-    # TODO: Ensure the save_to_hdf5 file correctly creates a file
     # TODO: Manage deleting the file after testing
     save_to_hdf5(data_dict, dataset_path, camera_names, max_timesteps)

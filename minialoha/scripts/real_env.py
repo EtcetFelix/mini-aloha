@@ -83,7 +83,7 @@ class RealEnv:
                 PUPPET_GRIPPER_POSITION_NORMALIZE_FN(qpos_raw[GRIPPER_INDEX])
             ]  # this is position not joint
             positions.append(qpos)
-            positions.append(gripper_qpos)
+            # positions.append(gripper_qpos)
         return np.concatenate(positions)
 
     # def get_qvel(self):
