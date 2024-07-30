@@ -2,7 +2,6 @@ import argparse
 import os
 import time
 
-import h5py
 import IPython
 import numpy as np
 from tqdm import tqdm
@@ -14,6 +13,7 @@ from minialoha.utils.constants import (
     LEFT_PUPPET_BOT_NAME,
     TASK_CONFIGS,
 )
+from minialoha.utils.data_utils import save_to_hdf5
 from minialoha.utils.dynamixel import Dynamixel
 from minialoha.utils.dynamixel_robot import DynamixelRobot
 from minialoha.utils.robot_manager import RobotManager
@@ -113,7 +113,7 @@ def instantiate_robots() -> RobotManager:
     return robot_manager
 
 
-def save_dataset(dataset_dir, dataset_name: str, overwrite: bool) -> str:
+def create_dataset_path(dataset_dir, dataset_name: str, overwrite: bool) -> str:
     if not os.path.isdir(dataset_dir):
         os.makedirs(dataset_dir)
     dataset_path = os.path.join(dataset_dir, dataset_name)
@@ -125,30 +125,29 @@ def save_dataset(dataset_dir, dataset_name: str, overwrite: bool) -> str:
     return dataset_path
 
 
-def save_to_hdf5(data_dict, dataset_path, camera_names, max_timesteps):
-    # HDF5
-    t0 = time.time()
-    with h5py.File(dataset_path + ".hdf5", "w", rdcc_nbytes=1024**2 * 2) as root:
-        root.attrs["sim"] = False
-        obs = root.create_group("observations")
-        image = obs.create_group("images")
-        for cam_name in camera_names:
-            _ = image.create_dataset(
-                cam_name,
-                (max_timesteps, 480, 640, 3),
-                dtype="uint8",
-                chunks=(1, 480, 640, 3),
-            )
-            # compression='gzip',compression_opts=2,)
-            # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
-        _ = obs.create_dataset("qpos", (max_timesteps, 14))
-        _ = obs.create_dataset("qvel", (max_timesteps, 14))
-        _ = obs.create_dataset("effort", (max_timesteps, 14))
-        _ = root.create_dataset("action", (max_timesteps, 14))
+def prepare_data_for_export(camera_names, actions, timesteps):
+    data_dict = {
+        "/observations/qpos": [],
+        "/observations/qvel": [],
+        "/observations/effort": [],
+        "/action": [],
+    }
+    for cam_name in camera_names:
+        data_dict[f"/observations/images/{cam_name}"] = []
 
-        for name, array in data_dict.items():
-            root[name][...] = array
-    print(f"Saving: {time.time() - t0:.1f} secs")
+    # len(action): max_timesteps, len(time_steps): max_timesteps + 1
+    while actions:
+        action = actions.pop(0)
+        timestep = timesteps.pop(0)
+        data_dict["/observations/qpos"].append(timestep.observation["qpos"])
+        # data_dict["/observations/qvel"].append(timestep.observation["qvel"])
+        # data_dict["/observations/effort"].append(timestep.observation["effort"])
+        data_dict["/action"].append(action)
+        for cam_name in camera_names:
+            data_dict[f"/observations/images/{cam_name}"].append(
+                timestep.observation["images"][cam_name]
+            )
+    return data_dict
 
 
 def capture_one_episode(
@@ -160,7 +159,7 @@ def capture_one_episode(
 
     env = make_real_env(robot_manager, setup_robots=False)
 
-    dataset_path = save_dataset(dataset_dir, dataset_name, overwrite)
+    dataset_path = create_dataset_path(dataset_dir, dataset_name, overwrite)
 
     # move all 4 robots to a starting pose where it is easy to start teleoperation, then wait till both gripper closed
     # opening_ceremony(
@@ -210,27 +209,7 @@ def capture_one_episode(
     action                  (14,)         'float64'
     """
 
-    data_dict = {
-        "/observations/qpos": [],
-        "/observations/qvel": [],
-        "/observations/effort": [],
-        "/action": [],
-    }
-    for cam_name in camera_names:
-        data_dict[f"/observations/images/{cam_name}"] = []
-
-    # len(action): max_timesteps, len(time_steps): max_timesteps + 1
-    while actions:
-        action = actions.pop(0)
-        timestep = timesteps.pop(0)
-        data_dict["/observations/qpos"].append(timestep.observation["qpos"])
-        # data_dict["/observations/qvel"].append(timestep.observation["qvel"])
-        # data_dict["/observations/effort"].append(timestep.observation["effort"])
-        data_dict["/action"].append(action)
-        for cam_name in camera_names:
-            data_dict[f"/observations/images/{cam_name}"].append(
-                timestep.observation["images"][cam_name]
-            )
+    data_dict = prepare_data_for_export(camera_names, actions, timesteps)
 
     save_to_hdf5(data_dict, dataset_path, camera_names, max_timesteps)
 
