@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import time
 from typing import List
 
@@ -117,8 +118,8 @@ def instantiate_robots() -> RobotManager:
 def prepare_data_for_export(camera_names, actions, timesteps):
     data_dict = {
         "/observations/qpos": [],
-        "/observations/qvel": [],
-        "/observations/effort": [],
+        # "/observations/qvel": [],
+        # "/observations/effort": [],
         "/action": [],
     }
     for cam_name in camera_names:
@@ -146,10 +147,9 @@ def capture_one_episode(
     dataset_dir,
     dataset_name: str,
     overwrite: bool,
+    robot_manager: RobotManager,
 ):
     print(f"Dataset name: {dataset_name}")
-
-    robot_manager = instantiate_robots()
 
     env = make_real_env(robot_manager, setup_robots=False)
 
@@ -210,7 +210,7 @@ def capture_one_episode(
     return True
 
 
-def main(args):
+def main(args, robot_manager: RobotManager):
     task_config = TASK_CONFIGS[args["task_name"]]
     dataset_dir = task_config["dataset_dir"]
     max_timesteps = task_config["episode_len"]
@@ -232,6 +232,7 @@ def main(args):
             dataset_dir,
             dataset_name,
             overwrite,
+            robot_manager,
         )
         is_healthy = True  # TODO: REMOVE
         if is_healthy:
@@ -289,5 +290,14 @@ if __name__ == "__main__":
         default=None,
         required=False,
     )
-    main(vars(parser.parse_args()))
+    robot_manager = instantiate_robots()
+    try:
+        main(vars(parser.parse_args()), robot_manager)
+    except KeyboardInterrupt:
+        print("Shutdown requested...exiting")
+        robot_manager.shutdown_gracefully()
+        try:
+            sys.exit(130)
+        except SystemExit:
+            os._exit(130)
     # debug()
