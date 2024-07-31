@@ -17,6 +17,15 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python Debugger: replay episodes",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "minialoha/scripts/replay_episodes.py",
+            "args": ["--episode_idx", "1"],
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env" 
+        },
+        {
             "name": "Python Debugger: manual adjusting",
             "type": "debugpy",
             "request": "launch",
