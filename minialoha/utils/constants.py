@@ -13,7 +13,8 @@ TASK_CONFIGS = {
         "dataset_dir": DATA_DIR + "/aloha_wear_shoe",
         "num_episodes": 50,
         "episode_len": 1000,
-        "camera_names": ["cam_high", "cam_low", "cam_left_wrist", "cam_right_wrist"],
+        "camera_names": [],
+        # "camera_names": ["cam_high", "cam_low", "cam_left_wrist", "cam_right_wrist"],
     },
 }
 
@@ -55,6 +56,10 @@ def prep_robots(leader: Robot, follower: Robot):
     print(f"Follower position: {follower.read_position()}")
 
 
+NUM_LEADER_ROBOTS = 1
+NUM_PUPPET_ROBOTS = 1
+NUM_JOINTS_ON_ROBOT = 5
+GRIPPER_INDEX = 4
 PUPPET_GRIPPER_POSITION_NORMALIZE_FN = lambda x: (x - PUPPET_GRIPPER_POSITION_CLOSE) / (
     PUPPET_GRIPPER_POSITION_OPEN - PUPPET_GRIPPER_POSITION_CLOSE
 )
